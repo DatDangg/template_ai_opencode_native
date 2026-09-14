@@ -205,7 +205,8 @@ SPEC_VALIDATOR_MODEL=deepseek-v4-pro  # Validates specs (yet another provider!)
 │   ├── superpowers/      ← 🧠 Debug Iron Law + TDD test-first (curate from obra/superpowers)
 │   ├── ponytail/         ← 🪶 Lazy senior dev ladder, chống over-engineering
 │   ├── scalability-architecture/  ← 📦 OPTIONAL scalability tiers (chỉ khi user bật option)
-│   └── karpathy-guidelines/  ← ✂️ Surgical changes + think before coding (andrej-karpathy-skills)
+│   ├── karpathy-guidelines/  ← ✂️ Surgical changes + think before coding (andrej-karpathy-skills)
+│   └── aislop/               ← 🧹 AI-slop detection gate (scanaislop/aislop, curated) — reviewer chạy aislop scan, score ≥ 80
 ├── tasks/                ← Generated task files
 ├── .devops/              ← EAS build/submit templates
 └── .context/             ← Shared state (progress, decisions, errors)

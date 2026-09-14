@@ -38,6 +38,21 @@ Sử dụng `REVIEWER_MODEL` từ `.env.local` (recommended: khác hãng với C
 
 ---
 
+## 🧹 AISlop Gate (task có code change — TS/JS/Expo-RN/Python/Go/Rust/Ruby/PHP/C#/C++)
+
+> Khi review task thay đổi code → chạy `aislop scan --changes --json` (hướng dẫn `skills/aislop/SKILL.md`) TRƯỚC khi duyệt PASS:
+
+- [ ] `aislop scan --changes --json` — score 0-100
+- [ ] Score ≥ 80 → ghi score vào review report, tiếp tục
+- [ ] Score < 80 → FAIL (hoặc MAJOR nếu chỉ 1-2 finding nhẹ) → loop sửa finding (mechanical: `aislop fix --safe`; phần cần judgment sửa tay) → re-scan ≥ 80 mới pass
+- [ ] Finding hợp lệ có lý do → suppress bằng `aislop-ignore-next-line/line/file` (kèm lý do), không né máy
+- [ ] Repo không thuộc 10 languages → `scoreable: false`, bỏ qua gate, KHÔNG tự bịa số
+- [ ] KHÔNG dùng `aislop agent` / `aislop fix -f` trong review
+
+> ❌ **Refuse (FAIL nếu thấy):** AI-slop nặng — narrative comment thừa, swallowed errors, hidden fallback, `as any` lan tràn, helper duplication, dead code, todo stubs khiến code rot mà tests/lint không bắt.
+
+---
+
 ## Review Checklist
 
 ### 1. Requirements Coverage
