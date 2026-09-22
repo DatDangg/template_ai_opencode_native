@@ -17,16 +17,19 @@ The system uses 4 patterns working together:
 
 | Agent | File | Role |
 |-------|------|------|
-| Brainstorm | `.agent/brainstorm.md` | Gather requirements; Phase 0.5 sets up git/CI/models/monitor keys upfront |
-| Spec Validator | `.agent/spec-validator.md` | Validate SPECIFICATIONS.md against requirements |
+| Brainstorm | `.agent/brainstorm.md` | Gather requirements; Phase 0.5 sets up git/models/monitor keys upfront |
+| Spec Validator | `.opencode/agent/spec-validator.md` (subagent) | Validate SPECIFICATIONS.md against requirements |
 | Design | `.agent/design.md` | Generate design tokens + screen specs |
 | Graph | `.agent/graph.md` | Decompose spec into layered tasks |
-| Loop | `.agent/loop.md` | Execute tasks (ReAct pattern; TDD test-first + ponytail ladder) |
-| Reviewer | `.agent/reviewer.md` | Per-task code review (`REVIEWER_MODEL`) + per-layer spec cross-check (`SPEC_VALIDATOR_MODEL`) |
+| Loop | `.agent/loop.md` | Orchestrate tasks (ReAct pattern); code gọi subagent `builder` |
+| Builder | `.opencode/agent/builder.md` (subagent) | Implement code + test cho 1 task |
+| Reviewer | `.opencode/agent/reviewer.md` (subagent) | Per-task code review + per-layer spec cross-check |
 | Error Analyzer | `.agent/error-analyzer.md` | Root cause analysis (Iron Law) + pattern learning |
 | Context Manager | `.agent/context-manager.md` | Context compression when window fills |
 | Rollback | `.agent/rollback.md` | Git checkpoint + revert strategy |
 | DevOps | `.agent/devops.md` | Git init, EAS Build, auto-push after each layer, store deploy |
+
+> Sau khi project đã tồn tại (maintenance) → dùng `/bug`, `/bug-check`, `/feature` theo `.agent/FEATURE_WORKFLOW.md`.
 
 ## Workflow
 
@@ -46,11 +49,11 @@ Graph → Layer Plan
 │  Loop (per task, respecting dependencies):                    │
 │  Read → Plan → Code → Test → Error Analyzer (fail)           │
 │      ↓ (PASS)                                                 │
-│  Reviewer [REVIEWER_MODEL] → code quality/security/tests      │
+│  reviewer subagent → code quality/security/tests               │
 │      ↓ (PASS) → git commit                                    │
 │                                                               │
 │  (after ALL tasks in layer PASS)                             │
-│  Layer Review [SPEC_VALIDATOR_MODEL] → cross-check vs SPEC   │
+│  spec-validator subagent → cross-check vs SPEC                │
 │      ↓ (PASS) → DevOps auto-push layer to git                │
 │                                                               │
 │  👀 HUMAN CHECKPOINT: Layer N done → proceed?                │
@@ -78,9 +81,10 @@ Submit → Done ✅
 - Chạy ngay sau doc scan, **trước khi hỏi requirements**
 - Git platform + token + repo → tạo repo tự động luôn sau khi có token
 - Expo project scaffold: `npx create-expo-app` (TypeScript template)
-- 3 models: `CODING_MODEL`, `REVIEWER_MODEL`, `SPEC_VALIDATOR_MODEL`
-- Lưu tất cả vào `.env.local` ngay
-- **User setup xong xuôi một lần → mới bắt đầu Phase 1**
+- **`/setup-profile`** → ghi `.agent/PROJECT_PROFILE.md` (branch, package manager, verify commands, DB)
+  + chọn model cho `builder`/`builder_strong`/`reviewer`/`spec_validator` và sync frontmatter `.opencode/agent/*.md`
+- Git/monitor keys lưu vào `.env.local` (model **KHÔNG** còn ở đây)
+- **User setup xong xuôi một lần → restart opencode → mới bắt đầu Phase 1**
 
 ### Phase 1: Brainstorm (`.agent/brainstorm.md`)
 - Interactive Q&A with user about project requirements
@@ -88,7 +92,7 @@ Submit → Done ✅
 - Output: populated `SPECIFICATIONS.md` + `.context/brainstorm-log.md`
 - **After completing → MUST proceed to Phase 2 (Spec Validation)**
 
-### Phase 2: Spec Validation (`.agent/spec-validator.md`) ← MANDATORY
+### Phase 2: Spec Validation (subagent `spec-validator`) ← MANDATORY
 - Validate `SPECIFICATIONS.md` for completeness and consistency
 - Check for conflicts, missing configs, ambiguous requirements
 - **PASS** → proceed to Phase 2.5 (Design)
@@ -113,6 +117,7 @@ Submit → Done ✅
 > Chờ user reply 'ok' / 'proceed' mới chạy Loop.
 
 ### Phase 4: Execution Loop (`.agent/loop.md`) — per layer
+- Code thực thi bởi subagent `builder` (`.opencode/agent/builder.md`); loop chỉ orchestrate, không tự code.
 - Check dependencies: chỉ chạy task khi tất cả deps đã PASS
 - Implement with TDD where appropriate (theo `skills/superpowers/test-driven-development.md`: test-first, xem fail, code tối thiểu pass)
 - Áp dụng ponytail ladder (`skills/ponytail/SKILL.md`) — dừng ở giải pháp tối giản nhất work, chống over-engineering
@@ -120,15 +125,15 @@ Submit → Done ✅
 - Handle errors via `.agent/error-analyzer.md` (theo Iron Law `skills/superpowers/systematic-debugging.md`: NO FIX WITHOUT ROOT CAUSE)
 - **Max 3 retries per task** → BLOCKED → notify human
 
-### Phase 5: Review (`.agent/reviewer.md`) — per layer
+### Phase 5: Review — per layer
 
-**5a. Per-task Review** (`REVIEWER_MODEL`)
+**5a. Per-task Review** (subagent `reviewer`)
 - Code quality, security, performance, testing
 - Write reports to `.context/review-reports/`
 - **PASS** → git commit → next task
 - **FAIL** → return to Loop with feedback (max 2 rounds, then escalate)
 
-**5b. Layer Review** (`SPEC_VALIDATOR_MODEL`) — sau khi ALL tasks PASS
+**5b. Layer Review** (subagent `spec-validator`) — sau khi ALL tasks PASS
 - Cross-check toàn bộ layer với `SPECIFICATIONS.md`
 - Đảm bảo features đã build đúng và đủ theo spec ban đầu
 - **PASS** → DevOps auto-push layer → Human checkpoint
@@ -152,13 +157,11 @@ Submit → Done ✅
 > Anh confirm để em submit lên store (EAS Submit) không?"
 > **KHÔNG tự động submit production store.** Chờ user approve.
 
-## Post-Completion: Change Requests (`.agent/change-request.md`)
+## Post-Completion: Change Requests
 
-1. User yêu cầu thêm/sửa/bỏ feature
-2. Change Request Agent classifies: **ADDITIVE** / **MODIFY** / **REMOVE**
-3. Analyze impact on existing layers + tasks
-4. Update `SPECIFICATIONS.md` + changelog
-5. Re-trigger: Spec Validator → Graph → Loop → Review → DevOps
+Khi project đã tồn tại, dùng workflow maintenance — `.agent/FEATURE_WORKFLOW.md` §3 + `/feature`:
+classify **ADDITIVE** / **MODIFY** / **REMOVE** → spec delta → spec-validator → phase/task →
+builder/reviewer/spec-validator → progress → commit. **Không** dùng lại pipeline greenfield để đắp feature sau khi build xong.
 
 ## Resume Protocol
 
@@ -182,22 +185,25 @@ If `.context/progress.json` exists and `status !== "not_started"`:
 
 ## Model Configuration
 
-Models are configured in `.env.local`. Use **different providers** for different roles to avoid bias:
-
-```
-CODING_MODEL=claude-opus-4-6          # Writes code
-REVIEWER_MODEL=gpt-5.4                # Reviews code (different provider!)
-SPEC_VALIDATOR_MODEL=deepseek-v4-pro  # Validates specs (yet another provider!)
-```
+Model khai ở `.agent/PROJECT_PROFILE.md` → block `models:` (**KHÔNG** dùng `.env.local`).
+Chọn/đổi bằng `/setup-profile`, hoặc sửa tay rồi `node scripts/apply-agent-models.mjs --write`, rồi **restart opencode**.
+`builder ≠ reviewer` nên khác **model family** để lộ blind spot khác nhau.
 
 ## Directory Structure
 
 ```
-├── AGENT.md              ← You are here
+├── AGENTS.md             ← Entry router (opencode auto-load): greenfield vs maintenance
+├── AGENT.md              ← Greenfield pipeline (You are here)
 ├── BRIEF.md              ← Your project idea
 ├── SPECIFICATIONS.md     ← Generated spec (after brainstorm)
-├── .env.local            ← Git/model/deploy config (git-ignored)
+├── opencode.jsonc        ← Permission gates (builder-strong opt-in, git/DB safety) + skills path
+├── .env.local            ← Git/monitor/deploy config (git-ignored)
 ├── .agent/               ← Agent workflows
+│   ├── FEATURE_WORKFLOW.md   ← Luật maintenance (bug/feature/update) — single source
+│   ├── PROJECT_PROFILE.md    ← Giá trị project (branch, pm, verify, models, DB) — điền qua /setup-profile
+│   └── *.md                  ← Greenfield agents (brainstorm/design/graph/loop/...)
+├── .opencode/            ← Subagent (builder/reviewer/spec-validator/scanner) + command (/bug,/bug-check,/feature,/setup-profile)
+├── scripts/              ← detect-profile, resolve-model, apply-agent-models, apply-verify-permissions, generate-inventory, check-workflow
 ├── skills/               ← Stack conventions & patterns
 │   ├── react-native/     ← React Native/Expo stack skills
 │   ├── security/         ← 🔒 Security skills (bắt buộc áp dụng)

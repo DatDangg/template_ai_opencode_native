@@ -17,7 +17,7 @@ Skill này giúp thiết kế hạ tầng/backend/database cho hệ thống **nh
 - **Phase 2.5 Design** (`.agent/design.md`): ĐỌC skill này trước khi viết design-spec; thêm mục **Architecture & Infrastructure** tương ứng Tier.
 - **Phase 3 Task Graph** (`.agent/graph.md`): Sinh thêm tầng task hạ tầng nếu Tier ≥ High Traffic.
 - **Phase 4 Loop** (`.agent/loop.md`): Coding Agent đọc file tier tương ứng trong `templates/` trước khi implement infra.
-- **Phase 5 Review** (`.agent/reviewer.md`): Chạy **Scalability Checklist Gate** ở mức phù hợp Tier.
+- **Phase 5 Review** (`reviewer` subagent): Chạy **Scalability Checklist Gate** ở mức phù hợp Tier.
 - **Bất kỳ lúc nào** user hỏi về hạ tầng/scale → tham chiếu `references/*.md`.
 
 ## FILES
@@ -94,4 +94,4 @@ Modular Monolith
 - **Phase 2.5 Design** (`.agent/design.md`): Nếu Tier ≥ Standard → ĐỌC skill này + `references/scalability-tiers.md` trước khi viết design-spec. Thêm mục **"Architecture & Infrastructure"** tương ứng Tier.
 - **Phase 3 Task Graph** (`.agent/graph.md`): Nếu Tier ≥ High Traffic → sinh thêm layer/task hạ tầng (Redis, worker, replica, observability).
 - **Phase 4 Loop** (`.agent/loop.md`): Đọc skill + file tier tương ứng trong `templates/` trước khi implement bất kỳ infra component.
-- **Phase 5 Review** (`.agent/reviewer.md`): Chạy **Scalability Checklist Gate** (mức tương ứng Tier) trước khi PASS phần hạ tầng.
+- **Phase 5 Review** (`reviewer` subagent): Chạy **Scalability Checklist Gate** (mức tương ứng Tier) trước khi PASS phần hạ tầng.

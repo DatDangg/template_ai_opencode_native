@@ -1,3 +1,8 @@
+---
+name: superpowers
+description: "Methodology cho mọi task code: debug/bugfix/feature/refactor. Cốt lõi là Iron Law 'NO FIXES WITHOUT ROOT CAUSE FIRST' (4 phases systematic debugging) + TDD test-first + verification before completion. Dùng khi gặp bug/lỗi/crash, test/lint/build fail, hoặc trước khi implement feature hay fix bug."
+---
+
 # Superpowers Methodology (Curated)
 
 > Curated from [obra/superpowers](https://github.com/obra/superpowers) — chọn phần hay nhất khớp với flow OpenCode Project Template, không copy nguyên xi.

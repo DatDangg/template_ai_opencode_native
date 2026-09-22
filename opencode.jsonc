@@ -1,0 +1,88 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // Gate cứng cho model mạnh: gọi builder-strong PHẢI qua prompt duyệt của user.
+  // Permission `task` khớp theo TÊN subagent. Last match wins → `*` đứng trước.
+  // ⚠️ Auto-mode (--auto / auto-approve) sẽ tự duyệt `ask` → mất gate.
+  // ═══════════════════════════════════════════════════════════════════════════
+  "skills": {
+    "paths": ["./skills"]
+  },
+
+  "permission": {
+    "task": {
+      "*": "allow",
+      "builder-strong": "ask"
+    },
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // Gate git: chặn push thẳng main/ref main + mọi thao tác phá hoại.
+    // opencode eval theo THỨ TỰ → rule rộng `*` đứng TRƯỚC, rule hẹp đứng SAU.
+    // ═══════════════════════════════════════════════════════════════════════════
+    "bash": {
+      "*": "allow",
+
+      // --- Cấm push trần: automation phải dùng explicit target branch từ PROJECT_PROFILE ---
+      "git push": "deny",
+
+      // --- Cho phép push explicit target branch generic; deny hẹp bên dưới vẫn override ---
+      // Lưu ý: `git push origin *` khớp cả push trần, nên phải deny lại `git push origin` ngay sau đó.
+      "git push origin *": "allow",
+      "git push origin": "deny",
+
+      // --- Cấm push aggregate/mirror/refspec force vì có thể đẩy main/refs khác mà command không chứa "main" ---
+      "git push --all*": "deny",
+      "git push * --all*": "deny",
+      "git push --mirror*": "deny",
+      "git push * --mirror*": "deny",
+      "git push*+refs/heads/*": "deny",
+      "git push*refs/heads/*:refs/heads/*": "deny",
+
+      // --- Cấm push thẳng main (mọi biến thể, kể cả refspec refs/heads/main) ---
+      "git push* main*": "deny",
+      "git push* main": "deny",
+      "git push*:main*": "deny",
+      "git push*HEAD:main*": "deny",
+      "git push*+main*": "deny",
+      "git push*refs/heads/main*": "deny",
+
+      // --- Cấm force push ---
+      "git push --force*": "deny",
+      "git push*--force*": "deny",
+      "git push -f*": "deny",
+      "git push* -f*": "deny",
+      "git push*-f *": "deny",
+
+      // --- Cấm xóa remote branch ---
+      "git push origin --delete*": "deny",
+      "git push origin :*": "deny",
+
+      // --- Cấm phá hoại working tree ---
+      "git reset --hard*": "deny",
+      "git checkout --*": "deny",
+
+      // --- Cấm DB/migration destructive shortcuts; dùng migration versioned theo PROJECT_PROFILE ---
+      // Chỉ match command đặc trưng để không chặn nhầm commit message/prose.
+      "*prisma db push*": "deny",
+      "*drizzle-kit push*": "deny",
+      "*prisma migrate reset*": "deny",
+      "*prisma db seed*": "deny",
+      "*supabase db reset*": "deny",
+      "*db:push*": "deny",
+      "*db:reset*": "deny",
+      "*db:seed*": "deny"
+
+      // Bare git push is denied. Automation must use explicit target branch from PROJECT_PROFILE:
+      // `git push origin <target_branch>`.
+      // PROJECT_PROFILE.forbidden_branch is not read automatically by opencode.jsonc;
+      // add a local deny rule for the real forbidden branch if it is not `main`.
+
+      // --- Template generic: KHÔNG hardcode target_branch ở đây.
+      //     Nếu project muốn allow hẹp hơn, điền tên branch thật trong PROJECT_PROFILE rồi thêm rule local
+      //     đặt TRƯỚC các deny main/force để không vô tình mở lại force-push:
+      // "git push -u origin <target_branch>*": "allow",
+      // "git push origin <target_branch>*": "allow",
+    }
+  }
+}

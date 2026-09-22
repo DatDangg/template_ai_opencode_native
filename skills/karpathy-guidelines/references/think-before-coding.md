@@ -35,7 +35,7 @@ Model thường: tự chọn 1 cách hiểu, im lặng chạy theo, không hỏi
 ## Liên hệ với template
 
 - **Phase 1 Brainstorm** (`.agent/brainstorm.md`): vốn đã clarify từng câu — nguyên tắc này mở rộng sang **mọi giai đoạn**, kể cả khi code/change-request.
-- **Phase 5 Review** (`.agent/reviewer.md`): Assumption Check — reviewer verify agent không tự chọn thầm giả định lớn.
+- **Phase 5 Review** (`reviewer` subagent): Assumption Check — reviewer verify agent không tự chọn thầm giả định lớn.
 - **Ponytail** (`skills/ponytail/SKILL.md`): bổ trợ — "nhu cầu phỏng đoán → nói, bỏ qua" (YAGNI).
 
 ## Ví dụ

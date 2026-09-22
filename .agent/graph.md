@@ -4,7 +4,7 @@
 Đọc SPECIFICATIONS.md và chia thành các layers theo dependency order. Mỗi layer chứa các tasks có thể chạy song song.
 
 ## Trigger
-- `spec-validator.md` trả về PASS → `.agent/design.md` → PASS → Graph chạy
+- Subagent `spec-validator` trả về PASS → `.agent/design.md` → PASS → Graph chạy
 - Hoặc manual trigger khi SPECIFICATIONS.md + `.context/design-spec.md` đã sẵn sàng
 
 ## Output

@@ -1,3 +1,8 @@
+---
+name: ponytail
+description: "Chống over-engineering khi implement/sửa/refactor code — leo 'lazy senior dev ladder' (YAGNI, stdlib/native/dependency có sẵn, deletion hơn addition, code tối thiểu). Dùng khi viết code mới, thêm dependency, thiết kế abstraction, refactor, hoặc khi có nguy cơ over-build/over-engineer. Dùng trong Phase 4 Loop trước khi implement."
+---
+
 # Ponytail (Curated)
 
 > Curated from [DietrichGebert/ponytail](https://github.com/DietrichGebert/ponytail) — "lazy senior dev" ladder, chống over-engineering. Rút gọn + Việt hóa, khớp Phase 4 Loop của template.

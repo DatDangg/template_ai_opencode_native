@@ -11,7 +11,7 @@ Thu thập requirements từ user qua conversation. Hỏi từng câu một, kh�
 - `.context/brainstorm-log.md` — full Q&A log
 - `.context/doc-index.md` — danh sách docs đã detect + classification
 - `SPECIFICATIONS.md` — generated spec
-- `.env.local` — configured (git/model)
+- `.env.local` — configured (git/monitoring)
 
 ---
 
@@ -92,12 +92,19 @@ npm install @react-navigation/native @react-navigation/native-stack @react-navig
 npx expo install react-native-gesture-handler react-native-reanimated
 ```
 
-### 3. Model selection (hỏi user hoặc đọc config)
+### 3. Model selection + project profile → chạy `/setup-profile`
 
-Hỏi/cấu hình 3 models:
-- `CODING_MODEL` — model chính viết code
-- `REVIEWER_MODEL` — model review (nên khác hãng)
-- `SPEC_VALIDATOR_MODEL` — model validate spec
+KHÔNG hỏi model thủ công ở đây. Chạy command `/setup-profile` (nó tự làm hết):
+
+- Auto-detect stack / `package_manager` / `source_roots` / `db_tool`.
+- Hỏi `target_branch`, `forbidden_branch`, `auto_commit_after_pass`, DB env nếu có.
+- Cho user chọn model cho `builder`, `builder_strong`, `reviewer`, `spec_validator`
+  (`scripts/resolve-model.mjs` liệt kê model khả dụng thật).
+- Ghi `.agent/PROJECT_PROFILE.md`, sync `model:` frontmatter vào `.opencode/agent/*.md`,
+  và sync quyền verify command cho reviewer/spec-validator/scanner.
+
+> ⚠️ Model **KHÔNG** ghi vào `.env.local` nữa — nguồn duy nhất là `.agent/PROJECT_PROFILE.md`.
+> Sau khi chạy xong phải **restart opencode** để model mới có hiệu lực.
 
 ### 3.5 Monitor setup (OpenTelemetry + crash reporting)
 
@@ -142,10 +149,6 @@ GIT_TOKEN=***          # dán token
 GIT_USERNAME=yourname
 REPO_NAME=my-app
 REPO_VISIBILITY=private
-
-CODING_MODEL=claude-opus-4-6
-REVIEWER_MODEL=gpt-5.4
-SPEC_VALIDATOR_MODEL=deepseek-v4-pro
 
 # EAS
 EXPO_APP_ID=

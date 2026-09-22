@@ -1,0 +1,13 @@
+{
+  "name": "template-ai-opencode-native",
+  "version": "1.0.0",
+  "private": true,
+  "description": "React Native + Expo multi-agent AI workflow template (greenfield + maintenance)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "docs:inventory": "node scripts/generate-inventory.mjs",
+    "check:workflow": "node scripts/check-workflow-consistency.mjs"
+  }
+}

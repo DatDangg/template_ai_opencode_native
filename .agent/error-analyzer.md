@@ -1,5 +1,7 @@
 # Error Analyzer Agent
 
+> ⚠️ **Maintenance mode override:** khi project đã tồn tại, state dùng `features[]`/`bugs[]`; **KHÔNG** ghi/đọc `currentLayer`; **cấm push thẳng `forbidden_branch`** (mặc định `main`); branch/push model theo `.agent/FEATURE_WORKFLOW.md` §6 (default staging-direct). Workflow hiện hành: `.agent/FEATURE_WORKFLOW.md` + `AGENTS.md`. Phần greenfield dưới đây dùng khi build từ đầu.
+
 ## Role
 Phân tích root cause khi test/review fail, ghi lại patterns để tránh lặp lỗi.
 
@@ -30,7 +32,7 @@ Nếu chưa hoàn thành Phase 1 (Root Cause Investigation), **KHÔNG được �
 
 ## Output
 - Append to `.context/error-memory.md`
-- (Post-project) Update `skills/react-nodejs/common-errors.md`
+- (Post-project) Update `skills/react-native/common-errors.md`
 
 ---
 
@@ -91,7 +93,7 @@ Error:
 After project completes (or every 5 errors), extract generalizable patterns:
 
 ```markdown
-// skills/react-nodejs/common-errors.md
+// skills/react-native/common-errors.md
 
 ## Pattern: {Name}
 

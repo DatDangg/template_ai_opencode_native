@@ -16,7 +16,7 @@ Curate từ [andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpat
 ## WHEN TO USE
 
 - **Phase 4 Loop** (`.agent/loop.md`): **ĐỌC `references/surgical-changes.md` TRƯỚC khi edit bất kỳ code cũ/nâng cấp/refactor.** Chỉ chạm đúng phần cần sửa.
-- **Phase 5 Review** (`.agent/reviewer.md`): Chạy **Surgical Diff Check** + **Assumption Check** khi review — mỗi dòng thay đổi phải trace về yêu cầu user; agent phải nêu giả định chứ không im lặng "chạy theo".
+- **Phase 5 Review** (`reviewer` subagent): Chạy **Surgical Diff Check** + **Assumption Check** khi review — mỗi dòng thay đổi phải trace về yêu cầu user; agent phải nêu giả định chứ không im lặng "chạy theo".
 - **Phase 1 Brainstorm** (tham chiếu): Think Before Coding nối với clarify/surface-tradeoffs đã có ở brainstorm + design.
 
 ## FILES
@@ -52,4 +52,4 @@ Curate từ [andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpat
 ## Integration Points (AGENT.md)
 
 - **Phase 4 Loop** (`.agent/loop.md`): Đọc `references/surgical-changes.md` trước khi edit code cũ. Kết hợp ponytail (simplicity) + TDD (goal-driven).
-- **Phase 5 Review** (`.agent/reviewer.md`): Chạy **Surgical Diff Check** trên mọi code change; verify không có drive-by refactor + assumptions được nêu.
+- **Phase 5 Review** (`reviewer` subagent): Chạy **Surgical Diff Check** trên mọi code change; verify không có drive-by refactor + assumptions được nêu.
