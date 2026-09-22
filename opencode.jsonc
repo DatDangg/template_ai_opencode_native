@@ -11,6 +11,9 @@
   },
 
   "permission": {
+    // Cho phép built-in doom_loop guard bật (hard-stop khi tool lặp vô hạn).
+    "doom_loop": "allow",
+
     "task": {
       "*": "allow",
       "builder-strong": "ask"

@@ -6,6 +6,13 @@ Chạy Change Request workflow trong `AGENTS.md` và `.agent/FEATURE_WORKFLOW.md
 
 `$ARGUMENTS`
 
+Nếu `$ARGUMENTS` là **làm tiếp phase N của feature đang có** (vd "tiếp phase 3", "continue phase 3 feature-x"):
+→ **KHÔNG** classify lại / tạo phase plan mới. Đọc `.context/progress.json` + Run Journal
+`.context/runs/feature-<slug>-phase-<N>-*.md`, rồi chạy Session Start Protocol
+(`.agent/FEATURE_WORKFLOW.md` § Session handoff & resume) — tương đương `/resume feature/<slug>`.
+Khi ở nhánh continue: **bỏ qua rule 1 (classify), 5 (chia phase/task), 6 (trình phase plan)** — chỉ áp dụng
+các rule còn lại cho phase đang dở.
+
 Quy tắc bắt buộc:
 1. Classify ADDITIVE / MODIFY / REMOVE trước khi code.
 2. Requirement mơ hồ → hỏi lại, không tự chọn giả định lớn.

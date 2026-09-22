@@ -4,6 +4,7 @@ mode: subagent
 # model: do Phase 0.5 set (đồng bộ từ .agent/PROJECT_PROFILE.md → models.builder_strong).
 # Đổi sau này: chạy /setup-profile. Không hardcode model cá nhân vào template.
 temperature: 0.1
+steps: 50
 permission:
   bash:
     "*": allow

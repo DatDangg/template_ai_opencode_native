@@ -4,6 +4,7 @@ mode: subagent
 # model: do Phase 0.5 set (đồng bộ từ .agent/PROJECT_PROFILE.md → models.spec_validator, family thứ 3).
 # Đổi sau này: chạy /setup-profile. Không hardcode model cá nhân vào template.
 temperature: 0.1
+steps: 20
 permission:
   edit:
     "*": deny
@@ -63,7 +64,8 @@ Trả về:
 - Gaps: [MISSING] / [PARTIAL], kèm requirement + task liên quan.
 - Ghi report **đúng tên** vào `.context/review-reports/`:
   - Pre-plan spec validation: `feature-<slug>-spec-validation.md`
-  - Phase review (chỉ feature nhiều phase): `feature-<slug>-phase-<N>-review.md`
+  - Phase review (chỉ feature nhiều phase): `feature-<slug>-phase-<N>-round-<R>-review.md`
+  Luôn ghi rõ `round-<R>`; không gộp nhiều vòng vào một file; rerun cùng round → **ghi đè**.
   Sai tên → close-out gate coi như **chưa có report**.
 - Nếu subagent không ghi được report vì permission/runtime, primary phải persist nguyên văn report vào đúng path `.context/review-reports/`.
 

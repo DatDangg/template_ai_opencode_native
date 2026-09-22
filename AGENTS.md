@@ -24,6 +24,7 @@ Route theo trạng thái repo:
 | "thêm/sửa/bỏ/xóa tính năng", "change/update feature" | **Change Request workflow** → FW §3 → `/feature` |
 | "implement feature" (spec/task đã có sẵn) | **Builder theo task** → `.opencode/agent/builder` |
 | "review", "check", "soát" (một diff/task cụ thể) | **Reviewer** → `.opencode/agent/reviewer` — KHÔNG tự sửa code |
+| "tiếp phase N", "continue", "resume việc dở" | **Session Start Protocol** → FW § Session handoff & resume → `/resume` (KHÔNG classify lại) |
 | "thêm skill", "add skill", "tạo skill", "register skill" | **Customize opencode** — tạo/cập nhật runtime skill đúng format (§Local skills) |
 | hỏi / điều tra / "tại sao", "how does X work" | **Research-only** — KHÔNG edit nếu user chưa yêu cầu fix |
 
@@ -52,6 +53,7 @@ Không rõ intent → hỏi 1 câu ngắn để phân loại, đừng đoán.
 | Reviewer risk level (FAST/NORMAL/STRICT) | FW §6 |
 | Check commands | `.agent/PROJECT_PROFILE.md` + FW §6 |
 | Danh sách bug/feature → checkpoint trước khi gọi Builder | FW §2.6, §3.8 |
+| Session handoff / resume (Run Journal) | FW § Session handoff & resume (+ `/resume`) |
 
 ## Non-negotiables (mọi route)
 
@@ -68,6 +70,8 @@ Không rõ intent → hỏi 1 câu ngắn để phân loại, đừng đoán.
 - Cấm `db push`, `migrate reset`, seed/reset, clone data giữa môi trường cho staging/prod. `staging_db` phải khác `prod_db`; không sync data staging→prod.
 - **Model mạnh (`builder-strong`) chỉ dùng khi user yêu cầu rõ** — không tự chọn theo độ khó.
 - Xong việc → không tự chạy phase/task tiếp theo khi chưa qua **human checkpoint** (FW §8).
+- **Session handoff**: dừng ở ranh giới step → ghi Run Journal (write-ahead); session mới resume qua
+  `/resume` (FW § Session handoff & resume) — **đĩa là sự thật**, pointer là hint.
 
 ## Tool Loop Guard
 

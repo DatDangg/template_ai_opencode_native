@@ -4,6 +4,7 @@ mode: subagent
 # model: do Phase 0.5 set (đồng bộ từ .agent/PROJECT_PROFILE.md → models.builder).
 # Đổi sau này: chạy /setup-profile. Không hardcode model cá nhân vào template.
 temperature: 0.1
+steps: 40
 permission:
   bash:
     "*": allow
@@ -36,6 +37,8 @@ Trước khi làm bất cứ gì, đọc theo thứ tự:
 Quy tắc bắt buộc:
 - **Chỉ sửa trong scope task.** Không drive-by refactor, không "improve" code lân cận
   (`skills/karpathy-guidelines/references/surgical-changes.md`).
+- **Read-before-write:** trước khi sửa, đọc file hiện có + `git diff`; coi code trên đĩa là sự thật —
+  có thể là bản dở từ lần chạy bị cắt ngang, không tạo lại mù.
 - **Test-first** cho critical path (auth, payment, data mutation) — xem
   `skills/superpowers/test-driven-development.md`. Bug fix phải có test tái hiện fail trước fix.
 - **Chống over-engineering** — dừng ở giải pháp tối giản nhất work (`skills/ponytail/SKILL.md`).
@@ -59,6 +62,9 @@ Quy tắc bắt buộc:
   Command/search empty hoặc non-zero thì ghi nhận và chuyển hướng. Bash permission denied thì **DỪNG NGAY**,
   không retry/đổi biến thể/vòng qua pipeline; chuyển Grep/Read hoặc ghi `Blocked`. Không xác minh được thì ghi
   `Residual risk`/`Blocked`, không lặp tool.
+- `Glob`/`Grep` tối đa **≤ 15 lần** cho một task; empty/non-zero → chuyển hướng hoặc báo blocker, không lặp lại.
+- **Trước khi kết thúc:** ghi summary ngắn vào `.context/runs/<type>-<slug>-<phaseTask>.builder.md`
+  (đã làm gì, vì sao, còn dở gì) để session sau resume không phải redo mù.
 
 Trả về:
 - Task đã hoàn thành (yes/no), files create/modify, test đã thêm + kết quả check,

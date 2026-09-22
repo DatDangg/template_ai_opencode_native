@@ -91,8 +91,8 @@ const specAgent = ".opencode/agent/spec-validator.md";
 if (existsSync(join(ROOT, FW))) {
   const fw = read(FW);
   for (const needle of [
-    "<feature|bug>-<slug>-phase-<N>-task-<NN>-review.md",
-    "<feature|bug>-<slug>-phase-<N>-review.md",
+    "<feature|bug>-<slug>-phase-<N>-task-<NN>-round-<R>-review.md",
+    "<feature|bug>-<slug>-phase-<N>-round-<R>-review.md",
     "bug-<slug>-one-line-review.md",
     "feature-<slug>-spec-validation.md",
   ]) {
@@ -205,7 +205,7 @@ for (const f of mdFiles) {
   }
 }
 for (const a of [revAgent, specAgent]) {
-  if (existsSync(join(ROOT, a)) && read(a).includes("<feature|bug>-<slug>-phase-<N>-review.md")) {
+  if (existsSync(join(ROOT, a)) && read(a).includes("<feature|bug>-<slug>-phase-<N>-round-<R>-review.md")) {
     fail(`${a}: phase-review phải theo loại work-item (feature→spec-validator, bug→reviewer)`);
   }
 }

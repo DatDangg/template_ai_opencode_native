@@ -298,13 +298,14 @@ Khi có work item, có thể mở rộng trong `features[]` / `bugs[]`:
 - Bug task phải có `Repro Verification`; feature/update task phải có `Feature Verification`.
 
 ### Review report
-- Task reviewer report phải đúng tên: `.context/review-reports/<feature|bug>-<slug>-phase-<N>-task-<NN>-review.md`.
-- Phase-level report khi hết phase: `.context/review-reports/<feature|bug>-<slug>-phase-<N>-review.md`.
-  - **Feature** nhiều phase → `spec-validator` ghi `feature-<slug>-phase-<N>-review.md` (§3.7). `reviewer` KHÔNG ghi file này.
-  - **Bug** nhiều phase → `reviewer` ghi `bug-<slug>-phase-<N>-review.md`; bug 1 phase thì task review là đủ, không bắt buộc phase-review. `spec-validator` KHÔNG ghi file này.
+- Task reviewer report phải đúng tên: `.context/review-reports/<feature|bug>-<slug>-phase-<N>-task-<NN>-round-<R>-review.md`.
+- Phase-level report khi hết phase: `.context/review-reports/<feature|bug>-<slug>-phase-<N>-round-<R>-review.md`.
+  - **Feature** nhiều phase → `spec-validator` ghi `feature-<slug>-phase-<N>-round-<R>-review.md` (§3.7). `reviewer` KHÔNG ghi file này.
+  - **Bug** nhiều phase → `reviewer` ghi `bug-<slug>-phase-<N>-round-<R>-review.md`; bug 1 phase thì task review là đủ, không bắt buộc phase-review. `spec-validator` KHÔNG ghi file này.
 - One-line bug (không có task file): `.context/review-reports/bug-<slug>-one-line-review.md` (chứa Repro Verification + Verdict).
-- **Feature nhỏ không tách task** (1 phase, low risk): dùng phase-review `feature-<slug>-phase-<N>-review.md` do `spec-validator` ghi — KHÔNG cần task-review (tránh deadlock).
+- **Feature nhỏ không tách task** (1 phase, low risk): dùng phase-review `feature-<slug>-phase-<N>-round-<R>-review.md` do `spec-validator` ghi — KHÔNG cần task-review (tránh deadlock).
 - Pre-plan spec validation (trước khi chia phase/task): `.context/review-reports/feature-<slug>-spec-validation.md`.
+- **Quy tắc `round-<R>`**: luôn ghi rõ vòng (1, 2, …); không gộp nhiều vòng vào một file; rerun cùng round sau khi bị cancel → **ghi đè** (không tạo file trùng).
 - Trước khi set status `done`: kiểm tra report tồn tại bằng slug/path. Không có report → **KHÔNG đóng việc**.
 
 ## 6. Cổng chặn (gates)
@@ -333,10 +334,10 @@ Khi có work item, có thể mở rộng trong `features[]` / `bugs[]`:
 - **UI**: responsive theo device size (small ~360–390, large ~414–430); a11y; đo contrast; không slop.
 - **Progress bắt buộc**: mọi thay đổi trạng thái bug/feature → update `.context/progress.json`.
 - **Close-out report gate**: trước status `done`, phải có **≥1 report hợp lệ theo loại work-item**:
-  - task → `<feature|bug>-<slug>-phase-<N>-task-<NN>-review.md`
-  - phase (feature: `spec-validator`; bug: `reviewer`) → `<feature|bug>-<slug>-phase-<N>-review.md`
+  - task → `<feature|bug>-<slug>-phase-<N>-task-<NN>-round-<R>-review.md`
+  - phase (feature: `spec-validator`; bug: `reviewer`) → `<feature|bug>-<slug>-phase-<N>-round-<R>-review.md`
   - bug one-line (không task) → `bug-<slug>-one-line-review.md`
-  - feature nhỏ không task → dùng phase-review `feature-<slug>-phase-<N>-review.md`
+  - feature nhỏ không task → dùng phase-review `feature-<slug>-phase-<N>-round-<R>-review.md`
   Feature còn phải có report pre-plan `feature-<slug>-spec-validation.md`. Không có report hợp lệ → status `blocked`, không commit/push.
 - **Commit gate**: sau Reviewer PASS + Doc Impact/Reconcile + report gate, set progress/task status `done`
   như một phần của close-out commit. Trước final response, HEAD commit phải tồn tại và bao gồm trạng thái
@@ -366,6 +367,73 @@ Khi có work item, có thể mở rộng trong `features[]` / `bugs[]`:
 - Bash bị permission deny → **DỪNG NGAY**: không retry, không đổi biến thể, không vòng qua pipeline;
   chuyển Grep/Read hoặc ghi `Blocked`.
 - Không xác minh được → ghi `Residual risk`/`Blocked`, không lặp tool.
+
+### Session handoff & resume (Run Journal)
+
+Mục tiêu: **dừng ở bất kỳ ranh giới step, mở session mới làm tiếp** — không mất code, không lạc step,
+worst case **redo đúng 1 step**. Resume là **tái dựng** từ artifact, **không** phải nối tiếp lossless.
+
+- **Artifact:** `.context/runs/<type>-<slug>-<phaseTask>.md` (template `.context/runs/_TEMPLATE.md`).
+  Primary ghi journal; **subagent không ghi**. WIP/checkpoint **KHÔNG** ghi vào task file.
+- **Command:** `/resume <type>/<slug>` (không classify lại). Nhánh "tiếp phase N" của `/feature` cũng dùng protocol này.
+
+**Write-ahead checkpoint (bắt buộc):**
+1. TRƯỚC khi gọi subagent: ghi `step=<bước>, status=running`, snapshot `filesTouched`/`filesNew`
+   từ `git status --short`, in `▶ START <bước> <phaseTask>`.
+2. SAU khi subagent trả về: ghi `status=awaiting`, `evidence`, `next`, cập nhật manifest,
+   **rồi mới** in `✅ DONE <bước> <phaseTask>`. Ghi journal **TRƯỚC** khi in `✅ DONE`.
+3. `✅ DONE` là **điểm dừng an toàn**. `▶ START ... running` mà cancel → session sau **redo bước đó**.
+
+**Banner:** mỗi checkpoint in `▶ START` / `✅ DONE` kèm `phaseTask` + `next`; khi `status=running`
+ghi rõ "cancel sẽ redo bước này".
+
+**Session Start Protocol (đầu mỗi session):**
+1. Đọc journal của `activeWorkItem` trong `.context/progress.json` (không có journal → coi pointer là hint).
+2. Reconcile với đĩa: `git status --short` (so manifest → file lạ = nhiễm chéo), `git log --oneline`
+   (task đã commit chưa), `evidence.reportPath` (reviewer đã chạy chưa, round mấy).
+3. In **Resume Briefing**: workItem, step, dirty files vs manifest, evidence, `next` → rồi mới làm.
+4. **Đĩa là sự thật, pointer là hint.** Lệch → theo đĩa; bước mơ hồ → redo bước đó.
+
+**Resume matrix** (journal `step`/`status` → việc session mới làm):
+
+| Cancel ở | journal | Session mới làm |
+|---|---|---|
+| giữa builder | `builder` / `running` | **redo builder** (read-before-write, không revert) |
+| sau builder, trước reviewer | `builder` / `awaiting` | **bỏ builder → chạy reviewer** |
+| giữa reviewer | `reviewer` / `running` | **rerun reviewer** (dọn report dở) |
+| sau reviewer | `reviewer` / `awaiting` | bước kế: `fix` \| `spec_validator` \| `closeout` \| phase sau |
+| giữa `fix` | `fix` / `running` | **redo builder ở chế độ fix** (đọc finding trong report trước) |
+| giữa `spec_validator` | `spec_validator` / `running` | **rerun spec_validator** |
+| giữa `closeout` | `closeout` / `running` | **idempotent close-out** (xem dưới) |
+
+**Redo policy / guardrail** (bắt buộc khi redo bất kỳ bước):
+- Redo là chạy lại **trên đĩa** (đọc file + `git diff` trước khi sửa), **không revert toàn cục**
+  (`git checkout --` / `reset --hard` bị deny). Scope theo `filesTouched`/`filesNew` trong journal.
+- Reviewer: **dọn/ghi đè report dở** trước khi rerun.
+- Builder: check side-effect đã lỡ chạy — migration file đã tạo (không tạo lại), generate client,
+  test DB local, process/port còn treo.
+- **`interrupted ≠ failed attempt`** — redo do cancel **KHÔNG** tăng `attempt`.
+
+**Close-out idempotent** (tránh double-commit khi cancel giữa close-out):
+1. journal `closeout` / `running`.
+2. Cập nhật `.context/progress.json` (status/phase/task/verdict) — **TRƯỚC** commit,
+   để pointer không stale nếu bị cancel giữa chừng.
+3. `git log --oneline` kiểm task đã có commit chưa:
+   - chưa có → commit (stage **đúng** file thuộc task) → push theo branch model (§2.8: chỉ khi
+     user yêu cầu rõ hoặc `auto_commit_after_pass: true`) → 4.
+   - đã có commit nhưng chưa push → `push` nếu được phép (§2.8) (**không** commit lại) → 4.
+4. journal `done`.
+
+**Loop signal:** thấy cùng lỗi lặp ≥ 2 lần → ghi `loopSignal` vào journal + escalate
+`architecture_review_needed`, không tự redo vô hạn.
+
+**Sau auto-compact:** phải **re-read journal** từ đĩa, không tin trí nhớ tóm tắt.
+
+**Usage gate (safe-point theo ngưỡng):** policy ở `.context/session-policy.json`
+(`usageGate: {enabled, threshold, minStepsLeft, hardThreshold}`). Ở mỗi checkpoint, gọi tool `usage()`
+(plugin `loop-guard`); nếu `percent ≥ threshold` **và** còn ≥ `minStepsLeft` bước (hoặc `percent ≥ hardThreshold`)
+→ hỏi user bằng `question` tool: `[End — mở session mới] / [Làm tiếp] / [Tiếp, đừng hỏi tới hardThreshold]`.
+Chọn End → in Resume Briefing + dòng `/resume <type>/<slug>` để copy sang session mới, rồi dừng turn.
 
 ### Check commands
 Lấy từ `.agent/PROJECT_PROFILE.md` → các field `web_typecheck_command`, `web_lint_command`,

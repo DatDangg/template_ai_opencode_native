@@ -1,0 +1,8 @@
+{
+  "usageGate": {
+    "enabled": true,
+    "threshold": 0.35,
+    "minStepsLeft": 2,
+    "hardThreshold": 0.75
+  }
+}

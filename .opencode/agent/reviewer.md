@@ -4,6 +4,7 @@ mode: subagent
 # model: do Phase 0.5 set (đồng bộ từ .agent/PROJECT_PROFILE.md → models.reviewer, khác model family với builder).
 # Đổi sau này: chạy /setup-profile. Không hardcode model cá nhân vào template.
 temperature: 0.1
+steps: 30
 permission:
   edit:
     "*": deny
@@ -84,6 +85,9 @@ Tool Loop Guard:
 - Bash bị permission deny → **DỪNG NGAY**: không retry, không đổi biến thể, không vòng qua pipeline;
   chuyển Grep/Read hoặc ghi `Blocked`.
 - Không xác minh được → ghi `Residual risk`/`Blocked`, không lặp tool.
+- Giới hạn tool đọc `Glob`/`Grep`/`Read`: FAST tối đa 8, NORMAL tối đa 15, STRICT tối đa 25.
+  - `Glob` trả empty hoặc > 50 kết quả → ghi `Residual risk` và **DỪNG**; không đổi pattern rồi lặp lại.
+  - Vượt cap tool đọc → ghi `Residual risk` thay vì chạy tiếp.
 
 Trả về report:
 - Review level: `FAST` / `NORMAL` / `STRICT`
@@ -94,9 +98,10 @@ Trả về report:
 - Verdict: ✅ PASS / ❌ FAIL
 - PASS chỉ khi không còn CRITICAL/MAJOR **và**, với bug task, original repro status là `PASS` có evidence kiểm chứng được.
   Ghi report **đúng tên** vào `.context/review-reports/`:
-  - Task review: `<feature|bug>-<slug>-phase-<N>-task-<NN>-review.md`
-  - Phase review (chỉ bug nhiều phase): `bug-<slug>-phase-<N>-review.md`
+  - Task review: `<feature|bug>-<slug>-phase-<N>-task-<NN>-round-<R>-review.md`
+  - Phase review (chỉ bug nhiều phase): `bug-<slug>-phase-<N>-round-<R>-review.md`
   - One-line bug (không task file): `bug-<slug>-one-line-review.md` (chứa Repro Verification)
+  Luôn ghi rõ `round-<R>`; không gộp nhiều vòng vào một file; rerun cùng round → **ghi đè**.
   Sai tên → close-out gate coi như **chưa có report**.
 - Nếu subagent không ghi được report vì permission/runtime, primary phải persist nguyên văn report vào đúng path `.context/review-reports/`.
 
