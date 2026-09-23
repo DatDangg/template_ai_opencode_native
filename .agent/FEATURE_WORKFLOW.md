@@ -118,7 +118,7 @@ Chỉ bỏ checkpoint nếu prompt có đúng một trong các cụm: `auto proc
   ```
   Repro-Verification: <short evidence of root cause + expected/actual>
   ```
-- Branch model: default **staging-direct** nghĩa là commit trên current branch khi current branch = `target_branch` và push bằng `git push origin <target_branch>`; nếu user yêu cầu feature branch thì commit/push chính current feature branch bằng `git push origin <current-branch>` và chỉ mở PR khi user yêu cầu rõ.
+- Branch model: default **staging-direct** nghĩa là commit trên current branch khi current branch = `target_branch`; **push không tự động** — chỉ `git push origin <target_branch>` khi user yêu cầu rõ hoặc `auto_commit_after_pass: true`. Nếu user yêu cầu feature branch thì commit/push chính current feature branch bằng `git push origin <current-branch>` và chỉ mở PR khi user yêu cầu rõ.
 - Tuyệt đối không push `forbidden_branch`; không `--force`/`-f` (đã chặn ở `opencode.jsonc`).
 - Push chỉ khi user yêu cầu rõ hoặc `auto_commit_after_pass: true` trong `.agent/PROJECT_PROFILE.md`; Reviewer FAIL / progress chưa xong → **không** commit/push.
 - Không hardcode tên branch — luôn đọc từ profile.
@@ -232,7 +232,7 @@ Classify → Spec delta → Spec Validator → Phase/Task → Human duyệt plan
   Reviewer PASS, Spec Validator PASS khi hết phase, và hoàn tất Doc Impact & Reconcile (§6) hoặc ghi `no doc impact`.
   Trạng thái `done`/progress/doc-impact này phải nằm trong close-out commit; progress/task file không cần biết SHA của commit đang được tạo.
 - Nếu test/check/review/spec status là `FAIL`, `BLOCKED`, hoặc unknown → không set `done`.
-- Commit/push: xem §2.8 (commit-first sau PASS; default staging-direct push `target_branch`, feature branch chỉ khi user yêu cầu).
+- Commit/push: xem §2.8 (commit-first sau PASS; default staging-direct — push `target_branch` chỉ khi user yêu cầu rõ hoặc `auto_commit_after_pass: true`; feature branch chỉ khi user yêu cầu).
 
 ---
 
@@ -367,6 +367,9 @@ Khi có work item, có thể mở rộng trong `features[]` / `bugs[]`:
 - Bash bị permission deny → **DỪNG NGAY**: không retry, không đổi biến thể, không vòng qua pipeline;
   chuyển Grep/Read hoặc ghi `Blocked`.
 - Không xác minh được → ghi `Residual risk`/`Blocked`, không lặp tool.
+- **Chi phí subagent `explore`:** chỉ spawn `explore` khi root cause **chưa xác định**. Đã có
+  `file:line`/root cause chứng minh → **cấm spawn `explore`**; tự `Read` đúng vị trí. Chưa chắc → tối đa
+  **1 lần** mỗi điều tra (mỗi subagent là session riêng, tự đọc lại context, không share cache).
 
 ### Session handoff & resume (Run Journal)
 
@@ -484,6 +487,10 @@ không fail workflow và không tự hardcode lệnh.
   Lưu ý family ≠ gateway. `/setup-profile` chạy bước này tự động (§5a).
 - `reviewer` / `spec-validator` không được sửa source; chỉ được ghi report scoped khi đang review.
 - Chạy dạng **subagent** → context sạch, không thừa hưởng completion report của builder.
+- **`explore` (built-in)**: subagent kế thừa model/variant của session cha. Nếu cha chạy variant `high`,
+  `explore` cũng tốn variant `high` → set override `agent.explore` trong `opencode.jsonc`
+  (`model` rẻ hơn + `variant: low`) để tránh đốt reasoning token. Đi kèm rule chống spawn `explore`
+  thừa ở §6 Tool Loop Guard / `AGENTS.md` § Tool Loop Guard.
 
 ### Luật opt-in `builder-strong`
 - **CHỈ dùng khi user yêu cầu rõ.** Không tự chọn theo phán đoán "bài này khó".

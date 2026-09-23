@@ -80,6 +80,10 @@ Không rõ intent → hỏi 1 câu ngắn để phân loại, đừng đoán.
 - Command/search trả empty hoặc non-zero → ghi nhận và chuyển hướng, không retry vô hạn.
 - Bash bị permission deny → **DỪNG NGAY**: không retry, không đổi biến thể, không vòng qua pipeline; chuyển Grep/Read hoặc ghi `Blocked`.
 - Không xác minh được → ghi `Residual risk`/`Blocked`, không lặp tool.
+- **Chi phí subagent `explore`:** chỉ spawn `explore` khi root cause **chưa xác định**. Đã có
+  `file:line`/root cause chứng minh (từ `/bug-check`, journal, repro, hoặc check đơn giản) → **cấm spawn
+  `explore`**; tự `Read` đúng vị trí và truyền thẳng `file:line` cho Builder. Chưa chắc root cause → tối đa
+  **1 lần** cho mỗi điều tra. Lý do: mỗi subagent là session riêng, tự đọc lại context từ đầu, không share cache.
 
 ## Local skills
 
